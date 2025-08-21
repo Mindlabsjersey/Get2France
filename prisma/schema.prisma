@@ -1,0 +1,115 @@
+generator client { provider = "prisma-client-js" }
+datasource db   { provider = "postgresql"; url = env("DATABASE_URL") }
+
+model User {
+  id            String  @id @default(cuid())
+  email         String  @unique
+  name          String?
+  businessName  String?
+  plan          Plan    @default(FREE)
+  timezone      String  @default("Europe/Paris")
+  createdAt     DateTime @default(now())
+  apps          App[]
+}
+
+enum Plan { FREE PRO AGENCY }
+
+model App {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields:[userId], references:[id])
+  name       String
+  slug       String   @unique
+  url        String?
+  platform   Platform
+  status     AppStatus @default(DRAFT)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  pages      Page[]
+  listing    StoreListing?
+  assets     AssetPack?
+  onepager   OnePager?
+  legalDocs  LegalDoc[]
+  domainMaps DomainMap[]
+  meta       Json?
+}
+
+enum Platform { WEB IOS ANDROID HYBRID }
+enum AppStatus { DRAFT PROCESSING READY PUBLISHED }
+
+model Page {
+  id            String @id @default(cuid())
+  appId         String
+  app           App    @relation(fields:[appId], references:[id])
+  url           String
+  title         String?
+  orderIndex    Int    @default(0)
+  domJson       Json?
+  screenshotKey String?
+  wireframeKey  String?
+  annotations   Json?
+}
+
+model StoreListing {
+  id             String @id @default(cuid())
+  appId          String @unique
+  app            App    @relation(fields:[appId], references:[id])
+  tagline        String
+  shortDesc      String
+  fullDesc       String
+  keywords       String
+  iosScreens     Json?
+  androidScreens Json?
+  locales        Json?
+}
+
+model AssetPack {
+  id           String @id @default(cuid())
+  appId        String @unique
+  app          App    @relation(fields:[appId], references:[id])
+  logoKey      String?
+  iconKey      String?
+  colorPrimary String?
+  colorAccent  String?
+  fontHeading  String?
+  fontBody     String?
+}
+
+model OnePager {
+  id        String @id @default(cuid())
+  appId     String @unique
+  app       App    @relation(fields:[appId], references:[id])
+  theme     String
+  path      String
+  published Boolean @default(false)
+  seo       Json?
+}
+
+model LegalDoc {
+  id          String   @id @default(cuid())
+  appId       String
+  app         App      @relation(fields:[appId], references:[id])
+  kind        LegalKind
+  version     Int      @default(1)
+  locale      String   @default("en-US")
+  status      LegalStatus @default(DRAFT)
+  htmlKey     String?
+  mdKey       String?
+  pdfKey      String?
+  generatedAt DateTime?
+  inputs      Json
+}
+
+enum LegalKind { PRIVACY TERMS COOKIE }
+enum LegalStatus { DRAFT PUBLISHED }
+
+model DomainMap {
+  id        String  @id @default(cuid())
+  appId     String
+  app       App     @relation(fields:[appId], references:[id])
+  hostname  String  @unique
+  provider  String  // 'vercel' | 'cloudflare' | 'manual'
+  status    String  // 'pending' | 'verifying' | 'active' | 'error'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

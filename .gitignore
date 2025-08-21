@@ -30,3 +30,8 @@
 *.exe
 *.out
 *.app
+node_modules
+.next
+npm-debug.log*
+/tmp
+.DS_Store
