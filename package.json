@@ -1,0 +1,17 @@
+{
+  "name": "get2france",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b packages/shared/tsconfig.json apps/api/tsconfig.json",
+    "test": "npm run build"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.2.2"
+  }
+}

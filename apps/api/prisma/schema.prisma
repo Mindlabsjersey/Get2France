@@ -1,0 +1,177 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector]
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  businessName String
+  plan         Plan           @default(BASIC)
+  timezone     String         @default("Europe/Paris")
+  createdAt    DateTime       @default(now())
+  activeUntil  DateTime?
+  settings     Settings?
+  sources      Source[]
+  mentions     Mention[]
+  alerts       Alert[]
+  usage        UsageCounter[]
+  apps         App[]
+}
+
+enum Plan {
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model Settings {
+  userId            String @id
+  user              User   @relation(fields: [userId], references: [id])
+  keywords          Json   // {brand:[], products:[], execs:[], competitors:[]}
+  excludedTerms     Json   // []
+  sentimentThreshold Int   @default(-30)
+  riskThreshold      Int   @default(60)
+  scanFrequency      ScanFrequency @default(DAILY)
+  alertChannels      Json   // [{type:"email",to:"..."}, {type:"slack",webhook:"..."}]
+}
+
+enum ScanFrequency {
+  DAILY
+  THREE_HOURLY
+  REALTIME
+}
+
+model Source {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  kind            SourceKind
+  handleOrPlaceId String
+  displayName     String
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  lastCheckedAt   DateTime?
+  mentions        Mention[]
+}
+
+enum SourceKind {
+  GOOGLE
+  TRIPADVISOR
+  REDDIT
+  TWITTER
+  YELP
+  TRUSTPILOT
+  RSS
+  FORUM_CUSTOM
+}
+
+model Mention {
+  id          String       @id @default(cuid())
+  userId      String
+  user        User         @relation(fields: [userId], references: [id])
+  sourceId    String
+  source      Source       @relation(fields: [sourceId], references: [id])
+  url         String
+  externalId  String?
+  publishedAt DateTime?
+  author      String?
+  title       String?
+  snippet     String?
+  fullText    String?
+  lang        String?
+  sentiment   Int?         // -100..100
+  category    String?      // staff, delivery, pricing, etc.
+  riskScore   Int?         // 0..100
+  status      MentionStatus @default(NEW)
+  dedupeHash  String       @db.VarChar(128)
+  createdAt   DateTime     @default(now())
+  // Novel features
+  leadScore   Int?         // likelihood this becomes a negative public review soon (0..100)
+  factors     Json?        // causal template: actor, action, object, context, failure_mode[]
+  vector      Bytes?       // pgvector (embedding for clustering)
+  alerts      Alert[]
+}
+
+enum MentionStatus {
+  NEW
+  ALERTED
+  ACKNOWLEDGED
+  DISMISSED
+}
+
+model Alert {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  mentionId      String
+  mention        Mention      @relation(fields: [mentionId], references: [id])
+  channel        AlertChannel
+  sentAt         DateTime
+  deliveryStatus String?
+}
+
+enum AlertChannel {
+  EMAIL
+  SLACK
+  WHATSAPP
+}
+
+model UsageCounter {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  month           String   // YYYYMM
+  mentionsScanned Int      @default(0)
+  alertsSent      Int      @default(0)
+  createdAt       DateTime @default(now())
+}
+
+model App {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  name      String
+  platform  AppPlatform
+  url       String?
+  slug      String      @unique
+  status    AppStatus   @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  pages     Page[]
+}
+
+enum AppPlatform {
+  IOS
+  ANDROID
+  WEB
+}
+
+enum AppStatus {
+  PENDING
+  CRAWLED
+  WIREFRAMES
+  GENERATED_LISTING
+  BUILT_ONEPAGER
+}
+
+model Page {
+  id           String   @id @default(cuid())
+  appId        String
+  app          App      @relation(fields: [appId], references: [id])
+  url          String
+  title        String
+  orderIndex   Int
+  domJson      Json
+  screenshotKey String
+  wireframeKey String?
+  annotations  Json?
+  createdAt    DateTime @default(now())
+}
+
