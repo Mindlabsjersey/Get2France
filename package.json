@@ -16,6 +16,7 @@
     "dayjs": "^1.11.13",
     "html-pdf-node": "^1.0.8",
     "ioredis": "^5.4.1",
+    "marked": "^11.1.1",
     "next": "14.2.5",
     "nodemailer": "^6.9.13",
     "openai": "^4.52.1",

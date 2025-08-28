@@ -1,5 +1,10 @@
-generator client { provider = "prisma-client-js" }
-datasource db   { provider = "postgresql"; url = env("DATABASE_URL") }
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
 
 model User {
   id            String  @id @default(cuid())
@@ -12,12 +17,16 @@ model User {
   apps          App[]
 }
 
-enum Plan { FREE PRO AGENCY }
+enum Plan {
+  FREE
+  PRO
+  AGENCY
+}
 
 model App {
   id         String   @id @default(cuid())
   userId     String
-  user       User     @relation(fields:[userId], references:[id])
+  user       User     @relation(fields: [userId], references: [id])
   name       String
   slug       String   @unique
   url        String?
@@ -34,13 +43,23 @@ model App {
   meta       Json?
 }
 
-enum Platform { WEB IOS ANDROID HYBRID }
-enum AppStatus { DRAFT PROCESSING READY PUBLISHED }
+enum Platform {
+  WEB
+  IOS
+  ANDROID
+  HYBRID
+}
+enum AppStatus {
+  DRAFT
+  PROCESSING
+  READY
+  PUBLISHED
+}
 
 model Page {
   id            String @id @default(cuid())
   appId         String
-  app           App    @relation(fields:[appId], references:[id])
+  app           App    @relation(fields: [appId], references: [id])
   url           String
   title         String?
   orderIndex    Int    @default(0)
@@ -53,7 +72,7 @@ model Page {
 model StoreListing {
   id             String @id @default(cuid())
   appId          String @unique
-  app            App    @relation(fields:[appId], references:[id])
+  app            App    @relation(fields: [appId], references: [id])
   tagline        String
   shortDesc      String
   fullDesc       String
@@ -66,7 +85,7 @@ model StoreListing {
 model AssetPack {
   id           String @id @default(cuid())
   appId        String @unique
-  app          App    @relation(fields:[appId], references:[id])
+  app          App    @relation(fields: [appId], references: [id])
   logoKey      String?
   iconKey      String?
   colorPrimary String?
@@ -78,7 +97,7 @@ model AssetPack {
 model OnePager {
   id        String @id @default(cuid())
   appId     String @unique
-  app       App    @relation(fields:[appId], references:[id])
+  app       App    @relation(fields: [appId], references: [id])
   theme     String
   path      String
   published Boolean @default(false)
@@ -88,7 +107,7 @@ model OnePager {
 model LegalDoc {
   id          String   @id @default(cuid())
   appId       String
-  app         App      @relation(fields:[appId], references:[id])
+  app         App      @relation(fields: [appId], references: [id])
   kind        LegalKind
   version     Int      @default(1)
   locale      String   @default("en-US")
@@ -100,13 +119,20 @@ model LegalDoc {
   inputs      Json
 }
 
-enum LegalKind { PRIVACY TERMS COOKIE }
-enum LegalStatus { DRAFT PUBLISHED }
+enum LegalKind {
+  PRIVACY
+  TERMS
+  COOKIE
+}
+enum LegalStatus {
+  DRAFT
+  PUBLISHED
+}
 
 model DomainMap {
   id        String  @id @default(cuid())
   appId     String
-  app       App     @relation(fields:[appId], references:[id])
+  app       App     @relation(fields: [appId], references: [id])
   hostname  String  @unique
   provider  String  // 'vercel' | 'cloudflare' | 'manual'
   status    String  // 'pending' | 'verifying' | 'active' | 'error'

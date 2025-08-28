@@ -8,7 +8,7 @@ async function generateListing({ appId }:{ appId:string }) {
   if (!app) return
   const features = (app.pages||[]).flatMap(p=>{
     const t = p.title ? `Page: ${p.title}. ` : ""
-    const lbl = JSON.stringify((p.annotations||[]).slice(0,3))
+    const lbl = JSON.stringify(((p.annotations as any[]) || []).slice(0,3))
     return [`${t}UI hints: ${lbl}`]
   }).slice(0,8).join("\n")
   const sys = `You are an ASO copywriter. Write App Store & Google Play compliant text.`

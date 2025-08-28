@@ -42,9 +42,17 @@ Locale: ${locale}`
   await (await import("fs/promises")).writeFile(mdKey, md, "utf8")
   await htmlToPdf(html, pdfKey)
   await prisma.legalDoc.create({
-    data: { appId: app.id, kind: "PRIVACY", version: 1, locale, status: "DRAFT",
-      htmlKey: htmlKey.replace(/^public\//,""), mdKey: mdKey.replace(/^public\//,""), pdfKey: pdfKey.replace/^public\//,""),
-      generatedAt: new Date(), inputs: defaults as any
+    data: {
+      appId: app.id,
+      kind: "PRIVACY",
+      version: 1,
+      locale,
+      status: "DRAFT",
+      htmlKey: htmlKey.replace(/^public\//, ""),
+      mdKey: mdKey.replace(/^public\//, ""),
+      pdfKey: pdfKey.replace(/^public\//, ""),
+      generatedAt: new Date(),
+      inputs: defaults as any
     }
   })
 }

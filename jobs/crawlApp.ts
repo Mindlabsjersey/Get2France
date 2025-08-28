@@ -7,7 +7,7 @@ import fs from "fs/promises"
 async function crawlApp({ appId, maxPages = 6 }:{ appId:string, maxPages?:number }) {
   const app = await prisma.app.findUnique({ where: { id: appId }})
   if (!app?.url) return
-  const browser = await puppeteer.launch({ headless: "new" })
+  const browser = await puppeteer.launch({ headless: true })
   const page = await browser.newPage()
   await page.setViewport({ width: 1440, height: 900 })
 
